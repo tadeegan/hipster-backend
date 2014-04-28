@@ -1,0 +1,12 @@
+{
+  "name" : "hipster",
+  "version" : "0.0.1",
+
+  "dependencies": {
+    "express": "",
+    "connect": "",
+    "mongoose": "",
+    "underscore": "",
+    "async": ""
+  }
+}
