@@ -6,7 +6,7 @@ var async = require('async');
 var lastfm = require("./lastfm");
 
 var mongoose = require('mongoose');
-mongoose.connect('mongodb://localhost/hispter');
+mongoose.connect('mongodb://localhost/hipster');
 
 var db = mongoose.connection;
 db.on('error', console.error.bind(console, 'connection error:'));
@@ -67,7 +67,7 @@ app.post('/rankartists', function(req, res){
         try{
             lastfm.start_lastfm_query();//starts the lasfm poll
         }catch(e){
-            
+
         }
     });
 });
