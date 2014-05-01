@@ -29,36 +29,36 @@ module.exports.start_lastfm_query = function(){
             headers: {
                 'Content-Type': 'application/json'
             }
-        }, handleLastFmResponse);
+        }, function(statusCode, result){
+            console.log("Last.fm responded~~~~~~~~~~~~");
+            console.log("status: " + statusCode);
+            console.log("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+            try{
+                result = {
+                    name: result.artist.name,
+                    mbid: result.artist.mbid,
+                    bandmembers: result.artist.bandmembers,
+                    url: result.artist.url,
+                    stats: result.artist.stats,
+                    tags: result.artist.tags
+                }
+                artist_model_class.findOne({artist_id: artist_model.artist_id}, function (err, doc){
+                    doc.lastfmdata = result;
+                    doc.save(function(err){
+                        console.log("saved....");
+                        if(err) console.log(err);
+                    });
+                });
+            }
+            catch(e){
+                console.log("failed to parse lastfm artist response: " + e);
+                console.log(result);
+            }   
+        });
     }, min_lasfm_request_interval);
 }
 
-var handleLastFmResponse = function(statusCode, result){
-    console.log("Last.fm responded~~~~~~~~~~~~");
-    console.log("status: " + statusCode);
-    console.log("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-    try{
-        result = {
-            name: result.artist.name,
-            mbid: result.artist.mbid,
-            bandmembers: result.artist.bandmembers,
-            url: result.artist.url,
-            stats: result.artist.stats,
-            tags: result.artist.tags
-        }
-        artist_model_class.findOne({artist_id: artist_model.artist_id}, function (err, doc){
-            doc.lastfmdata = result;
-            doc.save(function(err){
-                console.log("saved....");
-                if(err) console.log(err);
-            });
-        });
-    }
-    catch(e){
-        console.log("failed to parse lastfm artist response: " + e);
-        console.log(result);
-    }   
-}
+var handleLastFmResponse = 
 
 module.exports.queue = function(artist_model){
     console.log("queing artist :" + artist_model.artist_id);
