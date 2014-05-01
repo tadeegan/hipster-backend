@@ -3,6 +3,8 @@ var connect = require('connect');
 var _ = require('underscore');
 var async = require('async');
 
+var lastfm = require("./lastfm");
+
 var mongoose = require('mongoose');
 mongoose.connect('mongodb://localhost/hispter');
 
@@ -13,7 +15,7 @@ db.once('open', function callback () {
 });
 
 
-var artist_model = require('./artist_model').model;
+var artist_model = require('./artist_model');
 
 var app = express();
 app.use(connect.bodyParser());
@@ -31,7 +33,6 @@ app.get('/requestartists', function(req, res){
 });
 function get_artist_object(artist_id, callback){
     artist_model.findOne({"artist_id": artist_id}).exec(function(err, artist_obj){
-            console.log(artist_obj);
             if(!artist_obj){
                 var new_artist_model = new artist_model({
                     artist_id: artist_id,
@@ -52,13 +53,23 @@ function get_artist_object(artist_id, callback){
 }
 app.post('/rankartists', function(req, res){
     var artists = req.body.artists;
-    console.log(artists);
-    async.map(artists, get_artist_object, function(error, results){
-        console.log(results);
+    async.map(artists, get_artist_object, function(error, results){        
         var no_null = _.filter(results, function(obj){return !(obj == null)});
-        console.log(no_null);
+        no_null.forEach(function(artist){
+            try{
+                artist.classify();
+            }
+            catch(e){
+
+            }
+        });
         res.send(no_null);
-    })
+        try{
+            lastfm.start_lastfm_query();//starts the lasfm poll
+        }catch(e){
+            
+        }
+    });
 });
 
 app.post("/rank", function(req, res){
@@ -67,7 +78,6 @@ app.post("/rank", function(req, res){
     console.log(artist_id + " " + ranking);
     artist_model.findOne({"artist_id": artist_id}).exec(function(err, artist_obj){
         console.log("finished query");
-        console.log(artist_obj);
         if(artist_obj != null){
             artist_obj.sum ++;
             if(ranking == "hipster"){
